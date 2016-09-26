@@ -19,6 +19,7 @@ lg = logging.getLogger(__name__)
 
 
 class SecurityGroups(object):
+    owner_id = None
     def __init__(self, vpc=False, only_groups=[]):
         """
         Create instance, save ec2 connection
@@ -35,6 +36,7 @@ class SecurityGroups(object):
             self.owner_id = ec2.get_all_security_groups('default')[0].owner_id
             lg.debug("Default owner id: %s" % self.owner_id)
         except Exception as e:
+            self.owner_id = ''
             lg.error("Can't load default security group to lookup owner id: %s" % e)
 
     def load_remote_groups(self):
@@ -185,7 +187,7 @@ class SecurityGroups(object):
             raise InvalidConfiguration("Name of group '%s' is longer than 255 chars" % (name))
         if group.has_key('description') and len(group['description']) > 255:
             raise InvalidConfiguration("Description of group '%s' is longer than 255 chars" % (name))
-
+        allowed = ''
         # Test name and description according to spec
         if check_mode == 'strict':
             allowed = '^[a-zA-Z0-9_\- ]+$'
